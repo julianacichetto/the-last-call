@@ -182,6 +182,36 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  // Meta Pixel: initialize browser tracking once for the whole site.
+  useEffect(() => {
+    const pixelId = "1144129134807852";
+    const w = window as any;
+    if (w.fbq) return;
+
+    const fbq = function (...args: any[]) {
+      if (w.fbq.callMethod) {
+        w.fbq.callMethod.apply(w.fbq, args);
+      } else {
+        w.fbq.queue.push(args);
+      }
+    } as any;
+    if (!w._fbq) w._fbq = fbq;
+    fbq.push = fbq;
+    fbq.loaded = true;
+    fbq.version = "2.0";
+    fbq.queue = [];
+    w.fbq = fbq;
+    w._fbq = fbq;
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://connect.facebook.net/en_US/fbevents.js";
+    document.head.appendChild(script);
+
+    w.fbq("init", pixelId);
+    w.fbq("track", "PageView");
+  }, []);
+
   useEffect(() => {
     if (!__HF_DESIGN_INSPECTOR__) {
       return;
